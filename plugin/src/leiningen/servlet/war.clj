@@ -234,7 +234,6 @@ Created-By: lein-servlet\nBuilt-By: %s\nBuild-Jdk: %s"
                                     (map project)
                                     (mapcat as-vector)
                                     (map io/file))]
-          (println each-dir)
           (when (.exists each-dir)
             (assert (.isDirectory each-dir))
             (println "Copying classes from" (.getAbsolutePath each-dir))
