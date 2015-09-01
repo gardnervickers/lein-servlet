@@ -6,7 +6,8 @@
             [leiningen.compile        :as lc]
             [leiningen.core.classpath :as classpath]
             [leiningen.core.main      :as main]
-            [leiningen.servlet.util   :as util])
+            [leiningen.servlet.util   :as util]
+            [leiningen.javac :as javac])
   (:import (java.io       BufferedOutputStream ByteArrayInputStream
                           File FileOutputStream)
            (java.util.jar JarEntry JarOutputStream Manifest)
@@ -24,10 +25,10 @@
 (defn new-jar-file
   [path]
   (let [^File ensure-exist #(let [^File f (File. %)]
-                                (when-not (.exists f)
-                                  (.mkdirs (.getParentFile f))
-                                  (.createNewFile f))
-                                f)
+                              (when-not (.exists f)
+                                (.mkdirs (.getParentFile f))
+                                (.createNewFile f))
+                              f)
         ^Manifest manifest (-> "Manifest-Version: 1.0
 Created-By: lein-servlet\nBuilt-By: %s\nBuild-Jdk: %s"
                                (format (System/getProperty "user.name")
@@ -136,7 +137,7 @@ Created-By: lein-servlet\nBuilt-By: %s\nBuild-Jdk: %s"
       <param-name>%s</param-name>
       <param-value>%s</param-value>
     </init-param>"
-                                          (util/as-str k) (util/as-str v)))]
+                                        (util/as-str k) (util/as-str v)))]
     (format "
   <servlet>
     <servlet-name>%s</servlet-name>
@@ -198,6 +199,8 @@ Created-By: lein-servlet\nBuilt-By: %s\nBuild-Jdk: %s"
   [deps? exclusion-patterns project webapp]
   (lc/compile (merge-with concat project
                           {:dependencies '[[javax.servlet/servlet-api "2.5"]]}))
+  (javac/javac (merge-with concat project
+                           {:dependencies '[[javax.servlet/servlet-api "2.5"]]}))
   (binding [*exclusion-patterns* exclusion-patterns]
     (let [warpath (->> [:target-path :name :version]
                        (map project)
@@ -231,6 +234,7 @@ Created-By: lein-servlet\nBuilt-By: %s\nBuild-Jdk: %s"
                                     (map project)
                                     (mapcat as-vector)
                                     (map io/file))]
+          (println each-dir)
           (when (.exists each-dir)
             (assert (.isDirectory each-dir))
             (println "Copying classes from" (.getAbsolutePath each-dir))
