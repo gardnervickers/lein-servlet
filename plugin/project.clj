@@ -7,4 +7,12 @@
   :dependencies []
   :warn-on-reflection true
   :eval-in :leiningen
-  :eval-in-leiningen true)
+  :eval-in-leiningen true
+  :plugins [[org.apache.maven.wagon/wagon-ssh-external "2.6"]]
+  :repositories [["releases" "scp://10.1.0.197:/home/gvickers/repository"]]
+  :deploy-repositories [["releases" {:url "scp://10.1.0.197:/home/gvickers/repository"
+                                     :signing {:gpg-key "373F9636"}}]])
+
+(cemerick.pomegranate.aether/register-wagon-factory!
+ "scp" #(let [c (resolve 'org.apache.maven.wagon.providers.ssh.external.ScpExternalWagon)]
+          (clojure.lang.Reflector/invokeConstructor c (into-array []))))
